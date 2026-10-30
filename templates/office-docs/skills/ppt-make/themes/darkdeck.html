@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>深色叙事 · 幻灯片模板</title>
+<!--
+  深色叙事主题（darkdeck）· 使用说明（AI 填充内容前必读）：
+  1. 适用场景：复盘会 / 战略会 / 经营分析会等"带压迫感的汇报"——每页一个必须面对的问题或结论；
+  2. 复制整个文件，<style> 与末尾 <script> 原样保留，一个字都不改（导航点/页码由 JS 自动生成）；
+  3. 每页是一个 <section class="slide" data-layout="...">，按大纲需要复制/删除/重排；
+     版式：cover 封面 / fact 大数字冲击（可带表格或图表）/ points 要点 / think 提问块 / quote 金句 / closing 结尾；
+  4. 只替换文字内容，不改 class、不动结构；每页右下角 <span class="bignum"> 改成实际页序数字；
+  5. 内容边界：标题写结论句或尖锐问题；要点 ≤4 条；表格 ≤6 行；think 页的大问题一句话说透；
+  6. 图表：把沙箱生成的 PNG 以 base64 内嵌进 <img class="chart-img" src="data:image/png;base64,...">；
+  7. 方向键 ↑↓←→ 翻页，底部导航点可点击跳转；投影/汇报时直接全屏浏览器即可。
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;500;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #1a1a2e; color: #fff; }
+
+  .slide {
+    min-height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; padding: 60px 80px;
+    position: relative; overflow: hidden;
+  }
+  .slide-content { max-width: 1100px; width: 100%; z-index: 1; position: relative; }
+
+  .kicker { font-size: 0.85em; letter-spacing: 4px; opacity: 0.35; margin-bottom: 16px; font-weight: 300; }
+  h1 { font-size: 2.8em; font-weight: 700; line-height: 1.3; margin-bottom: 30px; }
+  .subtitle { font-size: 1.3em; font-weight: 300; opacity: 0.8; line-height: 1.6; }
+  .rule { height: 2px; width: 80px; background: #ffd43b; margin: 30px 0; }
+
+  .bignum { font-size: 6em; font-weight: 900; opacity: 0.12; position: absolute; right: 60px; bottom: 40px; z-index: 0; }
+
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+  th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  th { font-weight: 700; opacity: 0.5; font-size: 0.85em; letter-spacing: 1px; }
+  td { font-size: 1.1em; }
+  td.num { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .down { color: #ff6b6b; } .up { color: #51cf66; } .flat { color: #ffd43b; }
+
+  /* 大数字冲击 */
+  .big-fact { font-size: 1.8em; font-weight: 700; color: #ffd43b; margin: 10px 0; }
+  .big-fact.dim { color: rgba(255,255,255,0.4); }
+  .fact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 30px 0; }
+  .fact-card { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 30px; }
+  .fact-card h3 { margin-bottom: 15px; font-size: 1.1em; }
+  .fact-card h3 span { font-weight: 300; font-size: 0.65em; opacity: 0.6; }
+  .small-fact { font-size: 0.95em; opacity: 0.6; margin-top: 8px; }
+
+  /* 要点 */
+  .points { display: flex; flex-direction: column; gap: 22px; margin-top: 10px; }
+  .point { display: flex; gap: 20px; align-items: flex-start; }
+  .point-no { font-size: 1.3em; font-weight: 700; color: #ffd43b; line-height: 1.4; }
+  .point-body { font-size: 1.25em; line-height: 1.65; opacity: 0.9; }
+  .point-body small { display: block; font-size: 0.7em; opacity: 0.55; margin-top: 4px; }
+
+  /* 提问块：把问题甩给全场 */
+  .think-block {
+    background: rgba(255,255,255,0.03); border-left: 4px solid rgba(255,212,59,0.6);
+    padding: 28px 32px; border-radius: 0 12px 12px 0; margin: 40px 0;
+  }
+  .think-block p { font-size: 1.4em; font-weight: 300; line-height: 1.8; opacity: 0.9; }
+  .think-block strong { font-weight: 700; }
+
+  /* 金句 */
+  .slide[data-layout="quote"] .quote-block { font-size: 2em; font-weight: 300; text-align: center; opacity: 0.75; line-height: 1.6; }
+
+  .chart-img { display: block; max-width: 100%; max-height: 46vh; margin: 20px auto; border-radius: 12px; background: #fff; padding: 12px; }
+
+  /* 封面/结尾 */
+  .slide[data-layout="cover"], .slide[data-layout="closing"] { background: #0a0a0f; text-align: center; }
+  .slide[data-layout="cover"] h1 { font-size: 4em; font-weight: 900; margin-bottom: 10px; }
+  .slide[data-layout="cover"] .rule { margin: 30px auto; }
+  .slide[data-layout="closing"] h1 { font-size: 3em; }
+  .slide[data-layout="closing"] .rule { margin: 30px auto; }
+
+  /* 导航（JS 自动生成导航点，结构勿动） */
+  .nav-bar { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 100; background: rgba(26,26,46,0.8); padding: 10px 18px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.08); }
+  .nav-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.15); cursor: pointer; transition: all 0.3s; }
+  .nav-dot:hover, .nav-dot.active { background: #ffd43b; transform: scale(1.3); }
+  .nav-arrows { position: fixed; top: 50%; right: 30px; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 100; }
+  .nav-arrow { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; font-size: 1.2em; transition: all 0.3s; }
+  .nav-arrow:hover { background: rgba(255,212,59,0.2); border-color: #ffd43b; }
+
+  @media (max-width: 768px) {
+    .slide { padding: 30px 20px; }
+    h1 { font-size: 1.6em; }
+    .fact-grid { grid-template-columns: 1fr; }
+    .bignum { font-size: 3em; }
+    .think-block p { font-size: 1.1em; }
+    .slide[data-layout="cover"] h1 { font-size: 2.2em; }
+    .slide[data-layout="quote"] .quote-block { font-size: 1.3em; }
+  }
+  @media print {
+    .slide { min-height: auto; page-break-after: always; break-after: page; }
+    .nav-bar, .nav-arrows { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 版式：cover 封面 | 主标题 ≤10 字有压迫感；副题一行；底部 汇报人·日期 -->
+<section class="slide" data-layout="cover">
+  <div class="slide-content">
+    <h1>复盘会主标题</h1>
+    <div class="rule"></div>
+    <p class="subtitle">一句话副题：今天必须面对什么</p>
+    <p class="subtitle" style="margin-top:50px; font-size:0.85em; opacity:0.35;">汇报人 · 部门 · 2026-08</p>
+  </div>
+</section>
+
+<!-- 版式：fact 大数字冲击 | 2-4 个 .big-fact 砸出关键事实，可带数据表；涨跌色用 class="down/up/flat" -->
+<section class="slide" data-layout="fact">
+  <div class="slide-content">
+    <div class="kicker">KEY FACTS</div>
+    <h1>本页标题是数据结论</h1>
+    <div class="big-fact">峰值 33万 → 本月 14万</div>
+    <div class="big-fact dim">连续 4 个月下滑，未见拐点</div>
+    <table>
+      <tr><th>月份</th><th>业绩</th><th>环比</th></tr>
+      <tr><td>26.03</td><td class="num">19万</td><td class="down">-34%</td></tr>
+      <tr><td>26.04</td><td class="num">16万</td><td class="down">-16%</td></tr>
+      <tr><td>26.05</td><td class="num">14万</td><td class="down">-12%</td></tr>
+    </table>
+  </div>
+  <span class="bignum">02</span>
+</section>
+
+<!-- 版式：fact 双卡对比变体 | .fact-grid + .fact-card 左右两店/两方案对比，每卡一张小表 -->
+<section class="slide" data-layout="fact">
+  <div class="slide-content">
+    <div class="kicker">SIDE BY SIDE</div>
+    <h1>对比结论写在标题</h1>
+    <div class="fact-grid">
+      <div class="fact-card">
+        <h3>对象 A <span>（说明小字）</span></h3>
+        <div class="big-fact" style="font-size:1.4em;">关键数字一</div>
+        <p class="small-fact">一句补充</p>
+      </div>
+      <div class="fact-card">
+        <h3>对象 B <span>（说明小字）</span></h3>
+        <div class="big-fact" style="font-size:1.4em;">关键数字二</div>
+        <p class="small-fact">一句补充</p>
+      </div>
+    </div>
+  </div>
+  <span class="bignum">03</span>
+</section>
+
+<!-- 版式：points 要点 | ≤4 条，每条可带一行小字；装不下拆页 -->
+<section class="slide" data-layout="points">
+  <div class="slide-content">
+    <div class="kicker">KEY POINTS</div>
+    <h1>本页标题是结论句</h1>
+    <div class="points">
+      <div class="point"><span class="point-no">01</span><div class="point-body">第一条要点，一句话说清<small>需要时的补充说明，一行以内</small></div></div>
+      <div class="point"><span class="point-no">02</span><div class="point-body">第二条要点</div></div>
+      <div class="point"><span class="point-no">03</span><div class="point-body">第三条要点</div></div>
+    </div>
+  </div>
+  <span class="bignum">04</span>
+</section>
+
+<!-- 版式：think 提问块 | 全页只问一个问题，把讨论甩给全场；适合复盘会的转折页 -->
+<section class="slide" data-layout="think">
+  <div class="slide-content">
+    <div class="kicker">OPEN QUESTION</div>
+    <h1>问题背景一句话</h1>
+    <p class="subtitle">展开两句：现状是什么，为什么等不起。</p>
+    <div class="think-block">
+      <p><strong>我们必须回答的问题是什么？</strong></p>
+    </div>
+  </div>
+  <span class="bignum">05</span>
+</section>
+
+<!-- 版式：quote 金句 | 一页一句话，情绪锚点；页数紧张时整页删除 -->
+<section class="slide" data-layout="quote">
+  <div class="slide-content">
+    <div class="quote-block">❝<br>今天不需要答案，需要好的问题。<br>❞</div>
+  </div>
+  <span class="bignum">06</span>
+</section>
+
+<!-- 版式：closing 结尾 | 一句收束 + 下一步行动 -->
+<section class="slide" data-layout="closing">
+  <div class="slide-content">
+    <h1>结尾一句话</h1>
+    <div class="rule"></div>
+    <p class="subtitle" style="opacity:0.4;">下一步：一句话行动项</p>
+  </div>
+</section>
+
+<div class="nav-bar" id="navBar"></div>
+<div class="nav-arrows">
+  <a class="nav-arrow" onclick="navigate(-1); return false;">↑</a>
+  <a class="nav-arrow" onclick="navigate(1); return false;">↓</a>
+</div>
+
+<script>
+// 导航点按 .slide 数量自动生成——增删页无需改这里
+var slides = document.querySelectorAll('.slide');
+var navBar = document.getElementById('navBar');
+var currentSlide = 0;
+slides.forEach(function (s, i) {
+  var d = document.createElement('a');
+  d.className = 'nav-dot';
+  d.onclick = function () { goTo(i); };
+  navBar.appendChild(d);
+});
+function updateNav() {
+  document.querySelectorAll('.nav-dot').forEach(function (d, i) { d.classList.toggle('active', i === currentSlide); });
+}
+function goTo(i) {
+  currentSlide = Math.max(0, Math.min(slides.length - 1, i));
+  slides[currentSlide].scrollIntoView({ behavior: 'smooth' });
+  updateNav();
+}
+function navigate(dir) { goTo(currentSlide + dir); }
+var observer = new IntersectionObserver(function (entries) {
+  entries.forEach(function (entry) {
+    if (entry.isIntersecting) {
+      var idx = Array.from(slides).indexOf(entry.target);
+      if (idx >= 0) { currentSlide = idx; updateNav(); }
+    }
+  });
+}, { threshold: 0.5 });
+slides.forEach(function (s) { observer.observe(s); });
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') navigate(1);
+  if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') navigate(-1);
+});
+updateNav();
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+version: "3.9"
+
+services:
+  app:
+    build: ./backend
+    container_name: ea-app
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      # 仅本地 dev 默认口令（不暴露公网）；生产部署一律用 docker-compose.prod.yml + POSTGRES_PASSWORD 注入
+      DATABASE_URL: postgresql+asyncpg://ea:${POSTGRES_PASSWORD:-oreo_dev_password}@postgres:5432/enterprise_agent
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  sandbox:
+    build: ./sandbox
+    container_name: ea-sandbox
+    # 仅绑定宿主机回环：后端跑在宿主机（非 compose 的 ea-app）时需经 localhost:8100 访问；
+    # 不绑 0.0.0.0，保持对局域网不可达
+    ports:
+      - "127.0.0.1:8100:8100"
+    environment:
+      # 执行镜像需先在宿主机构建：docker build -f sandbox/runner.Dockerfile -t ea-sandbox-runner:local sandbox/
+      SANDBOX_IMAGE: ea-sandbox-runner:local
+      EXEC_TIMEOUT_SECONDS: "120"
+      MAX_OUTPUT_BYTES: "1048576"
+    volumes:
+      # 需要访问宿主机 Docker daemon 来起一次性执行容器
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: ea-postgres
+    environment:
+      POSTGRES_USER: ea
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-oreo_dev_password}
+      POSTGRES_DB: enterprise_agent
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ea -d enterprise_agent"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: ea-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+volumes:
+  pgdata:
+  redisdata:

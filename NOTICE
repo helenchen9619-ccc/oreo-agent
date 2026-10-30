@@ -1,0 +1,17 @@
+OREO — 企业数字人管理平台
+Copyright 2026 The OREO Authors
+
+This product includes software developed by the OREO project contributors,
+licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Third-party assets bundled in this repository:
+
+- Inter font (frontend/public/fonts/Inter.ttf)
+  Copyright (c) 2016 The Inter Project Authors (https://github.com/rsms/inter)
+  Licensed under the SIL Open Font License, Version 1.1
+  (see frontend/public/fonts/OFL.txt)
+
+Note: the WeCom (企业微信) Session Archive SDK (libWeWorkFinanceSdk_C.so) is
+NOT distributed with this repository. It is proprietary software of Tencent
+and must be downloaded separately from the official WeCom developer portal
+if you enable the WeCom archive integration.

@@ -1,0 +1,88 @@
+# 快速开始编排（本地评估用）：一条命令起完整栈，浏览器打开 http://localhost:8080
+#   docker compose -f docker-compose.quickstart.yml up -d --build
+#
+# 与 prod 的差异：纯 HTTP（无证书）、web 绑定 8080、dev 登录开启、密钥为公开的本地评估专用值。
+# ⚠️ 本文件里的 JWT_SECRET / FERNET_KEY / 数据库口令仅用于本地体验，严禁用于任何真实部署。
+version: "3.9"
+
+services:
+  app:
+    build: ./backend
+    container_name: oreo-app
+    environment:
+      DATABASE_URL: postgresql+asyncpg://ea:oreo_quickstart_password@postgres:5432/enterprise_agent
+      REDIS_URL: redis://redis:6379/0
+      # 本地评估专用公开值，真实部署必须用 deploy/gen_env_prod.sh 重新生成
+      JWT_SECRET: quickstart-local-only-jwt-secret-do-not-use-in-prod
+      FERNET_KEY: 01Sr35F4P84gHQD4IL1RG8MxPccbpmdQm-c7bKK1-3o=
+      DEV_LOGIN_ENABLED: "true"
+      PASSWORD_LOGIN_ENABLED: "true"
+      SANDBOX_BASE_URL: http://sandbox:8100
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    # 首次启动自动跑迁移；单 worker：调度器/_ACTIVE_TURNS 是进程内存态，多 worker 会错乱
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    restart: unless-stopped
+    volumes:
+      # data 目录（workspace 文件/消息附件/run_code 留痕）必须落宿主机卷，
+      # 否则重建容器即全部蒸发
+      - appdata:/app/data
+      # seed 脚本按仓库根布局找 /templates（只读挂载，跑种子脚本时才需要）
+      - ./templates:/templates:ro
+
+  sandbox:
+    build: ./sandbox
+    container_name: oreo-sandbox
+    # 不发布宿主端口：app 经 compose 内网访问，避免与本地 dev 栈的 8100 冲突
+    environment:
+      # 执行镜像需先在宿主机构建（首次体验可跳过，用到代码执行时再构建）：
+      #   docker build -f sandbox/runner.Dockerfile -t ea-sandbox-runner:local sandbox/
+      SANDBOX_IMAGE: ea-sandbox-runner:local
+      EXEC_TIMEOUT_SECONDS: "120"
+      MAX_OUTPUT_BYTES: "1048576"
+    volumes:
+      # 需要访问宿主机 Docker daemon 来起一次性执行容器
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: oreo-postgres
+    environment:
+      POSTGRES_USER: ea
+      POSTGRES_PASSWORD: oreo_quickstart_password
+      POSTGRES_DB: enterprise_agent
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ea -d enterprise_agent"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: oreo-redis
+    volumes:
+      - redisdata:/data
+    restart: unless-stopped
+
+  web:
+    build: ./frontend
+    container_name: oreo-web
+    ports:
+      - "8080:80"
+    volumes:
+      - ./deploy/nginx.quickstart.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:
+  appdata:

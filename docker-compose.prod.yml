@@ -1,0 +1,94 @@
+# 生产编排（云部署演练）：与 dev compose 的差异——无 --reload/源码挂载、postgres/redis 不暴露宿主端口、
+# 新增 web（nginx 托管前端 dist + 反代 /api）。用法：docker compose -f docker-compose.prod.yml up -d
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: ./backend
+      args:
+        PIP_INDEX: https://mirrors.aliyun.com/pypi/simple/
+    container_name: ea-app
+    # 不发布端口：仅 compose 内网可达，公网入口只有 web(nginx)
+    env_file:
+      - ./backend/.env.prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    # 单 worker：调度器/_ACTIVE_TURNS 是进程内存态，多 worker 会错乱
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    restart: unless-stopped
+    volumes:
+      # seed 脚本按仓库根布局找 /templates（__file__.parent.parent/templates），
+      # 而 app 镜像构建上下文只有 backend/ —— 挂载宿主机 templates 补这个缺口（只读）
+      - ./templates:/templates:ro
+      # data 目录（workspace 文件/消息附件 tmp_uploads/run_code 留痕 traces）必须落宿主机：
+      # 不挂载则写在容器层 /app/data，每次 build+up 重建容器即全部蒸发，
+      # 造成"DB（pgdata 卷）有记录、磁盘无文件"的幽灵行（2026-08-26 云上事故）
+      - ./backend/data:/app/data
+
+  sandbox:
+    build:
+      context: ./sandbox
+      args:
+        PIP_INDEX: https://mirrors.aliyun.com/pypi/simple/
+    container_name: ea-sandbox
+    ports:
+      - "127.0.0.1:8100:8100"
+    environment:
+      # 执行镜像需先在宿主机构建：docker build -f sandbox/runner.Dockerfile -t ea-sandbox-runner:local sandbox/
+      SANDBOX_IMAGE: ea-sandbox-runner:local
+      EXEC_TIMEOUT_SECONDS: "120"
+      MAX_OUTPUT_BYTES: "1048576"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: ea-postgres
+    environment:
+      POSTGRES_USER: ea
+      # 无默认值，部署前必须注入（与 backend/.env.prod 的 DATABASE_URL 口令一致，见 deploy/gen_env_prod.sh）：
+      #   export POSTGRES_PASSWORD=... && docker compose -f docker-compose.prod.yml up -d
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?must export POSTGRES_PASSWORD before deploying}
+      POSTGRES_DB: enterprise_agent
+    # 不发布端口：仅 compose 内网
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ea -d enterprise_agent"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: ea-redis
+    volumes:
+      - redisdata:/data
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        NPM_REGISTRY: https://registry.npmmirror.com
+    container_name: ea-web
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # deploy/nginx.conf 不进仓库（含你的真实域名）：从 deploy/nginx.conf.example 复制一份改成自己的域名
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:

@@ -1,0 +1,48 @@
+# OREO 生产站点模板：80 跳 443；443 托管前端 dist + 反代 /api 到 app 容器。
+# 用法：复制为 deploy/nginx.conf（该文件不进仓库），把 example.com 全部替换为你的域名，
+# 并用 certbot 签好 /etc/letsencrypt/live/<你的域名>/ 下的证书。
+server {
+    listen 80;
+    server_name example.com;
+    # certbot 续期验证路径（webroot 方式留门，standalone 时这段用不到也无害）
+    location /.well-known/acme-challenge/ { root /var/www/certbot; }
+    location / { return 301 https://$host$request_uri; }
+}
+
+server {
+    listen 443 ssl;
+    server_name example.com;
+
+    ssl_certificate     /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
+
+    client_max_body_size 100m;  # 与平台上传上限一致
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location /api/ {
+        proxy_pass http://app:8000;
+        # SSE 流式：关缓冲 + 长读超时，缺一不可
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 600s;
+        proxy_send_timeout 600s;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # hash 资产长缓存；缺失时 404 而不是 fallback 成 HTML（否则 module 脚本收到 text/html → 白屏）
+    location /assets/ {
+        try_files $uri =404;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+    }
+
+    # SPA 兜底：前端路由全部回 index.html；首页每次强制协商，重建后不拿旧首页
+    location / {
+        add_header Cache-Control "no-cache" always;
+        try_files $uri $uri/ /index.html;
+    }
+}

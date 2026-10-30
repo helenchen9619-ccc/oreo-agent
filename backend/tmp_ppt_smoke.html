@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>9月会员促销方案 · 黑白极简</title>
+<!--
+  黑白极简主题（minimal）· 使用说明（AI 填充内容前必读）：
+  1. 复制整个文件，<style> 与末尾 <script> 原样保留，一个字都不改；
+  2. 每页是一个 <section class="slide" data-layout="...">，按大纲需要复制/删除/重排；
+  3. 只替换文字内容，不改 class、不动结构；页码 <span class="page"> 按实际页序改数字；
+  4. 内容边界：要点 ≤4 条、每条 ≤2 行；表格 ≤6 行；标题写结论句，不写栏目名；
+  5. 输出尺寸 1280×720，浏览器打开可直接 Ctrl+P 打印/导出 PDF（已配分页）。
+-->
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #e9e9e9; font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; color: #111; }
+  .slide {
+    position: relative; width: 1280px; height: 720px; margin: 24px auto; overflow: hidden;
+    background: #fff; padding: 72px 84px; display: flex; flex-direction: column;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08); transform-origin: top center;
+    page-break-after: always; break-after: page;
+  }
+  .page { position: absolute; right: 40px; bottom: 28px; font-size: 14px; color: #bbb; letter-spacing: 1px; }
+  .kicker { font-size: 15px; letter-spacing: 4px; color: #999; margin-bottom: 14px; }
+  h1 { font-size: 40px; font-weight: 700; line-height: 1.3; }
+  .rule { width: 56px; height: 3px; background: #111; margin: 22px 0 30px; }
+  .sub { font-size: 17px; color: #777; line-height: 1.8; }
+
+  /* 封面 */
+  .slide[data-layout="cover"] { justify-content: center; }
+  .slide[data-layout="cover"] h1 { font-size: 68px; letter-spacing: 2px; }
+  .slide[data-layout="cover"] .rule { margin: 30px 0; }
+  .slide[data-layout="cover"] .sub { font-size: 18px; }
+
+  /* 目录 */
+  .toc { margin-top: 10px; }
+  .toc-item { display: flex; align-items: baseline; gap: 28px; padding: 22px 0; border-bottom: 1px solid #e5e5e5; }
+  .toc-item:last-child { border-bottom: none; }
+  .toc-no { font-size: 30px; font-weight: 700; color: #ddd; width: 56px; }
+  .toc-text { font-size: 24px; font-weight: 600; }
+
+  /* 要点页 */
+  .points { margin-top: 8px; display: flex; flex-direction: column; gap: 26px; }
+  .point { display: flex; gap: 20px; align-items: flex-start; }
+  .point-no { font-size: 22px; font-weight: 700; color: #111; border-bottom: 2px solid #111; padding-bottom: 2px; line-height: 1.4; }
+  .point-body { font-size: 21px; line-height: 1.65; color: #222; }
+  .point-body small { display: block; font-size: 15px; color: #999; margin-top: 4px; }
+
+  /* 数据表 */
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  th { font-size: 16px; color: #999; font-weight: 600; text-align: left; padding: 14px 16px; border-bottom: 2px solid #111; }
+  td { font-size: 19px; padding: 16px; border-bottom: 1px solid #e5e5e5; }
+  td.num { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* 对比页 */
+  .compare { display: flex; gap: 56px; margin-top: 10px; flex: 1; }
+  .compare .col { flex: 1; }
+  .compare h3 { font-size: 22px; padding-bottom: 12px; border-bottom: 2px solid #111; margin-bottom: 20px; }
+  .compare li { font-size: 19px; line-height: 1.7; color: #333; list-style: none; padding: 8px 0 8px 20px; position: relative; }
+  .compare li::before { content: ""; position: absolute; left: 0; top: 20px; width: 8px; height: 8px; background: #111; }
+
+  /* 结尾页 */
+  .slide[data-layout="closing"] { justify-content: center; align-items: center; text-align: center; }
+  .slide[data-layout="closing"] h1 { font-size: 60px; }
+
+  @media print {
+    body { background: #fff; }
+    .slide { margin: 0 !important; box-shadow: none; transform: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 版式：封面 -->
+<section class="slide" data-layout="cover">
+  <div class="kicker">MEMBER PROMOTION · SEPTEMBER</div>
+  <h1>9 月会员促销方案</h1>
+  <div class="rule"></div>
+  <div class="sub">以「充值返 + 双倍积分 + 老带新」三招拉动会员复购，冲刺 9 月会员销售占比 55%</div>
+  <div class="sub" style="margin-top:48px; font-size:16px; color:#999;">呈报：门店运营部 · 2026-08 · 数据为占位示例，待业务确认</div>
+</section>
+
+<!-- 版式：要点 | 活动机制 -->
+<section class="slide" data-layout="points">
+  <div class="kicker">PROMOTION MECHANISM</div>
+  <h1>三层活动叠加：拉新、充值、复购一次打通</h1>
+  <div class="rule"></div>
+  <div class="points">
+    <div class="point"><span class="point-no">01</span><div class="point-body">会员充值返现：充 500 返 60、充 1000 返 150<small>返额进会员账户，限 9 月内到店消费使用（示例力度，待财务核定）</small></div></div>
+    <div class="point"><span class="point-no">02</span><div class="point-body">全场消费双倍积分，积分月底可兑爆款商品<small>兑换清单由商品部 8/25 前提供</small></div></div>
+    <div class="point"><span class="point-no">03</span><div class="point-body">老带新奖励：老会员邀请新客注册并首单，双方各得 30 元券<small>新客券满 99 可用，有效期 30 天</small></div></div>
+    <div class="point"><span class="point-no">04</span><div class="point-body">周末会员日加码：每周六会员专享 95 折（可与积分同享）<small>折扣不与充值返额叠加使用</small></div></div>
+  </div>
+  <span class="page">02</span>
+</section>
+
+<!-- 版式：数据表 | 节奏与目标 -->
+<section class="slide" data-layout="table">
+  <div class="kicker">TARGETS & TIMELINE</div>
+  <h1>分三波段推进，目标会员销售占比 55%</h1>
+  <div class="rule"></div>
+  <table>
+    <thead><tr><th>波段</th><th>时间</th><th>主推动作</th><th>门店目标（示例）</th></tr></thead>
+    <tbody>
+      <tr><td>预热期</td><td>9/1–9/7</td><td>店员一对一邀约、社群预热</td><td class="num">新增会员 3,000 人</td></tr>
+      <tr><td>爆发期</td><td>9/8–9/21</td><td>充值返 + 双倍积分全开</td><td class="num">充值额 80 万元</td></tr>
+      <tr><td>返场期</td><td>9/22–9/30</td><td>积分兑换 + 会员日收口</td><td class="num">会员复购率 38%</td></tr>
+      <tr><td>全月总目标</td><td>9/1–9/30</td><td>会员销售占比</td><td class="num">55%（同比 +6pt）</td></tr>
+    </tbody>
+  </table>
+  <div class="sub" style="margin-top:22px; font-size:15px; color:#999;">门店执行要点：物料 8/30 前到店 · 每日晨会通报充值与拉新进度 · 以上数字均为占位示例【待补充：确认后目标】</div>
+  <span class="page">03</span>
+</section>
+
+<script>
+// 按容器宽度等比缩放整页（预览面板宽窄都能看全）；打印时 CSS 已复位 transform
+function fit() {
+  var w = Math.min(document.documentElement.clientWidth, 1280);
+  var s = w / 1280;
+  document.querySelectorAll('.slide').forEach(function (el) {
+    el.style.transform = 'scale(' + s + ')';
+    el.style.marginBottom = (720 * (s - 1) + 24) + 'px';
+  });
+}
+addEventListener('resize', fit); fit();
+</script>
+</body>
+</html>
