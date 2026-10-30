@@ -1,9 +1,8 @@
 # OREO · 企业数字人管理平台
 
-<!-- TODO(发布前): 把徽章里的 OWNER 替换为实际 GitHub 用户名 -->
 
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
-[![CI](https://github.com/OWNER/oreo-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/oreo-agent/actions/workflows/ci.yml)
+[![CI](https://github.com/helenchen9619-ccc/oreo-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/helenchen9619-ccc/oreo-agent/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.12-blue)](backend/requirements.txt)
 [![React](https://img.shields.io/badge/react-18-61dafb)](frontend/package.json)
 
@@ -37,7 +36,7 @@
 前置：已安装 Docker（含 Compose 插件）。
 
 ```bash
-git clone https://github.com/OWNER/oreo-agent.git
+git clone https://github.com/helenchen9619-ccc/oreo-agent.git
 cd oreo-agent
 docker compose -f docker-compose.quickstart.yml up -d --build
 ```
