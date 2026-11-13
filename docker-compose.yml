@@ -7,7 +7,9 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - ./backend/.env
+      # 本地私有配置（gitignore）；不存在也能起（全部走下方 environment 默认值）
+      - path: ./backend/.env
+        required: false
     environment:
       # 仅本地 dev 默认口令（不暴露公网）；生产部署一律用 docker-compose.prod.yml + POSTGRES_PASSWORD 注入
       DATABASE_URL: postgresql+asyncpg://ea:${POSTGRES_PASSWORD:-oreo_dev_password}@postgres:5432/enterprise_agent
