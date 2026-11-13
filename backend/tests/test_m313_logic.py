@@ -18,8 +18,9 @@ def test_guess_mime_fills_octet_stream_by_ext():
 
 
 def test_guess_mime_unknown_ext_keeps_fallback():
-    assert guess_mime("data.parquet", "application/octet-stream") == "application/octet-stream"
-    assert guess_mime("data.parquet", None) == "application/octet-stream"
+    # 必须用任何平台 mimetypes 库都不认识的扩展名（.parquet 在 py3.12+ Linux 已入库，会使断言炸）
+    assert guess_mime("data.oreo_unknown_ext", "application/octet-stream") == "application/octet-stream"
+    assert guess_mime("data.oreo_unknown_ext", None) == "application/octet-stream"
 
 
 def _make_pptx(slides: list[str]) -> bytes:
